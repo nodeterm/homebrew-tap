@@ -2,6 +2,7 @@
 
 ```bash
 brew tap nodeterm/tap
+brew trust nodeterm/tap   # Homebrew ≥6 asks once for third-party taps
 brew install nodeterm-pair
 ```
 
