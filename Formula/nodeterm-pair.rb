@@ -2,7 +2,7 @@ class NodetermPair < Formula
   desc "Pair your phone with this machine for nodeterm mobile (QR + SSH key)"
   homepage "https://nodeterm.dev"
   url "https://github.com/nodeterm/nodeterm-pair/archive/refs/tags/v0.1.0.tar.gz"
-  sha256 "PLACEHOLDER_FILLED_AFTER_TAG_PUSH"
+  sha256 "d81b7447774d3864fc155679a5eecbc7917ea6d3203255b65b13e3bbc8d5aa4b"
   license "MIT"
 
   depends_on "qrencode"
