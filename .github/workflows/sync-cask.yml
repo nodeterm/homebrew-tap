@@ -1,0 +1,78 @@
+name: Sync cask
+
+# Keeps Casks/nodeterm.rb pointed at the latest COMPLETE nodeterm release. Self-contained:
+# runs here with this repo's own GITHUB_TOKEN (contents: write) and reads the app repo's
+# public /releases/latest — which excludes prereleases, so a half-built release (the app
+# repo keeps releases prerelease until both platform builds upload) is never cask'd.
+# No cross-repo secrets; the org disables deploy keys.
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update cask to the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          rel=$(gh api repos/eneskirca/nodeterm/releases/latest)
+          tag=$(jq -r .tag_name <<<"$rel"); ver="${tag#v}"
+          cur=$(grep -m1 'version "' Casks/nodeterm.rb | sed 's/.*"\(.*\)".*/\1/')
+          if [ "$ver" = "$cur" ]; then echo "cask already at $ver"; exit 0; fi
+          for a in "nodeterm-${ver}-arm64.dmg" "nodeterm-${ver}.dmg"; do
+            jq -e --arg a "$a" '.assets[] | select(.name == $a)' <<<"$rel" >/dev/null || {
+              echo "::warning::$a not on the release yet; retrying next run"; exit 0; }
+          done
+          curl -sL -o arm.dmg "https://github.com/eneskirca/nodeterm/releases/download/${tag}/nodeterm-${ver}-arm64.dmg"
+          curl -sL -o intel.dmg "https://github.com/eneskirca/nodeterm/releases/download/${tag}/nodeterm-${ver}.dmg"
+          arm_sha=$(sha256sum arm.dmg | cut -d' ' -f1)
+          intel_sha=$(sha256sum intel.dmg | cut -d' ' -f1)
+          cat > Casks/nodeterm.rb <<CASK
+          cask "nodeterm" do
+            version "${ver}"
+
+            on_arm do
+              sha256 "${arm_sha}"
+              url "https://github.com/eneskirca/nodeterm/releases/download/v#{version}/nodeterm-#{version}-arm64.dmg"
+            end
+            on_intel do
+              sha256 "${intel_sha}"
+              url "https://github.com/eneskirca/nodeterm/releases/download/v#{version}/nodeterm-#{version}.dmg"
+            end
+
+            name "nodeterm"
+            desc "Node-based terminal manager — terminals and coding agents on an infinite canvas"
+            homepage "https://nodeterm.dev/"
+
+            livecheck do
+              url :url
+              strategy :github_latest
+            end
+
+            # The app self-updates via electron-updater; brew should not force-reinstall over it.
+            auto_updates true
+
+            app "nodeterm.app"
+
+            zap trash: [
+              "~/Library/Application Support/node-terminal",
+              "~/Library/Preferences/com.nodeterm.app.plist",
+              "~/Library/Saved Application State/com.nodeterm.app.savedState",
+            ]
+          end
+          CASK
+          sed -i 's/^          //' Casks/nodeterm.rb
+          git config user.name "nodeterm-release"
+          git config user.email "release@nodeterm.dev"
+          git add Casks/nodeterm.rb
+          git commit -m "cask: nodeterm ${tag}"
+          git push
