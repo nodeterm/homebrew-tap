@@ -1,12 +1,12 @@
 cask "nodeterm" do
-  version "0.2.26"
+  version "0.2.27"
 
   on_arm do
-    sha256 "16bb4f4613d292bf6f090702e0bd0e663adee6e008641b99fb51dc75a0983bfa"
+    sha256 "691a82c0a6658a184506bc1ee3403b8a81b722de5e1e166babb15feffcccc370"
     url "https://github.com/eneskirca/nodeterm/releases/download/v#{version}/nodeterm-#{version}-arm64.dmg"
   end
   on_intel do
-    sha256 "971512864ff03e862fd6245d5879e648b2233a7ddc6abe9c30c37112ced39558"
+    sha256 "235b57b118932407a9f55b9a95de9078d83e62f7d72bc57fb3e887a56d96cd74"
     url "https://github.com/eneskirca/nodeterm/releases/download/v#{version}/nodeterm-#{version}.dmg"
   end
 
