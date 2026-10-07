@@ -1,14 +1,17 @@
-# nodeterm Homebrew tap
+# nodeterm Homebrew tap (retired)
+
+The nodeterm desktop app is now in the official Homebrew cask repository, so no tap is needed:
 
 ```bash
-brew tap nodeterm/tap
-brew trust nodeterm/tap   # Homebrew ≥6 asks once for third-party taps
+brew install --cask nodeterm
 ```
 
-| Package | Install | What it is |
-|---|---|---|
-| `nodeterm` (cask) | `brew install --cask nodeterm` | The [nodeterm](https://nodeterm.dev) desktop app for macOS (Apple Silicon + Intel) |
-| `nodeterm-pair` | `brew install nodeterm-pair` | Host-side QR pairing helper for nodeterm mobile |
+If you installed it from this tap, `tap_migrations.json` moves the cask to `homebrew/cask` on
+your next `brew update`. You can then drop the tap:
 
-The cask is updated automatically by the release pipeline in the app repo.
-The app self-updates (electron-updater), so `brew upgrade` is rarely needed for it.
+```bash
+brew untap nodeterm/tap
+```
+
+This repository is archived. `nodeterm-pair` is no longer maintained: phone pairing is built
+into the nodeterm app (Settings → Phone).
